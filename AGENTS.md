@@ -23,9 +23,6 @@ Design, preview, screenshot, test, and visually verify only dark-mode UI. Never 
 - MyGo framework: <https://github.com/egoist/mygo>
 - Local checkout: `~/Code/studyrepos/mygo` -- study this when you need to study the tool or docs
   - Docs: `~/Code/studyrepos/mygo/docs`
-- Pitchfork: <https://pitchfork.jdx.dev/>
-  - Local checkout: `~/Code/studyrepos/pitchfork`
-  - Docs: `~/Code/studyrepos/pitchfork/docs`
 - `learnings.md` - your self-documented learnings based on past work and failures
 
 ## Commands
@@ -49,6 +46,7 @@ When user asks to build the app it means build it and copy result to `/Applicati
 - One fact lives in exactly ONE place. Never duplicate the same explanation across files — refer to the other module, component, or function by name, never by line number.
 - Every test is a permanent cost: add one ONLY if breaking the code makes it fail AND no existing test already would. Test whole user-facing flows, never MyGo or the stdlib; fake only system boundaries; regression tests must fail before the fix.
 - Touching tests means pruning them: delete low-value ones, merge duplicates, report the delta ("added 2, removed 3").
+- Write or rewrite all text (comments, docstrings, learnings, your responses, everything) in plain, layman-readable English in the spirit of ASD-STE100 Simplified Technical English: short sentences, active voice, simple tenses, one word one meaning, condition before command, every technical term defined at first use, no AI slop.
 
 ## Document Your Learnings
 
@@ -56,7 +54,7 @@ When user asks to build the app it means build it and copy result to `/Applicati
 
 Never record task-specific trivia or anything reading the docs would already tell you. If it wouldn't have saved you real time on this task, it doesn't belong.
 
-Keep it lean, prune stale entries, and never duplicate this file. Load the `writing-docs` skill beforeediting it.
+Keep it lean, prune stale entries, and never duplicate this file.
 
 ## Post-Task Checklist
 
