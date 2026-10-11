@@ -10,6 +10,14 @@ Pre-Alpha stage.
 - [ ] Ability to toggle a window staying on top.
 - [ ] Ability to run multiple windows.
 
+## North Star
+
+This app should look and feel as native as possible. The target is macOS 27 with dark theme. Every single UI/UX-decision you do must keep this North Star in mind.
+
+## Agent Workflow
+
+Design, preview, screenshot, test, and visually verify only dark-mode UI. Never spend time on light-mode UI.
+
 ## Tooling
 
 - MyGo framework: <https://github.com/egoist/mygo>

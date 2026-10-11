@@ -2,5 +2,10 @@
   "name": "Floater",
   "identifier": "net.uninen.floater",
   "version": "0.1.0",
-  "out": "build"
+  "out": "build",
+  "macos": {
+    "infoPlist": {
+      "LSUIElement": true
+    }
+  }
 }

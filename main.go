@@ -7,26 +7,23 @@ import (
 )
 
 func main() {
-	mygo.App.WhenReady(func() {
-		win := mygo.NewWindow(mygo.WindowOptions{
-			Title:     "Floater",
-			Width:     1024,
-			Height:    768,
-			URL:       "https://www.di.fm",
-			Frameless: true,
-			Page: mygo.PageOptions{
-				PreloadScript: `
-					document.addEventListener("DOMContentLoaded", () => {
-						const style = document.createElement("style");
-						style.textContent = "* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }";
-						document.head.append(style);
-					}, { once: true });
-				`,
-			},
-		})
-		enableOptionDrag(win)
-	})
-	if err := mygo.App.Run(); err != nil {
+	mygo.Theme.SetSource(mygo.ThemeDark)
+	mygo.App.SetActivationPolicy(mygo.ActivationPolicyAccessory)
+	if !mygo.App.RequestSingleInstanceLock() {
+		return
+	}
+	app, err := loadApp()
+	if err != nil {
+		log.Fatal(err)
+	}
+	mygo.App.SetMenu(app.appMenu())
+	mygo.App.OnWindowAllClosed(func() {})
+	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { app.quitting = true })
+	mygo.App.OnSecondInstance(func([]string, string) { app.newWindow() })
+	mygo.App.WhenReady(app.ready)
+	err = mygo.App.Run()
+	app.saves.Wait()
+	if err != nil {
 		log.Fatal(err)
 	}
 }
