@@ -26,6 +26,8 @@ type managedWindow interface {
 	SetTitle(string)
 	SetAlwaysOnTop(bool)
 	Navigate(string)
+	OnDidFinishLoad(func()) func()
+	ReloadIgnoringCache()
 }
 
 type windowManager struct {
@@ -171,6 +173,13 @@ func (m *windowManager) restore() {
 	for _, w := range m.windows {
 		if w.Open {
 			m.show(w.ID)
+			win := m.open[w.ID]
+			// Wait for the site so the refresh does not target an empty page.
+			var off func()
+			off = win.OnDidFinishLoad(func() {
+				off()
+				win.ReloadIgnoringCache()
+			})
 		}
 	}
 }

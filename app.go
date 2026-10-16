@@ -34,6 +34,10 @@ type nativeURLForm interface {
 type nativeWindow struct{ *mygo.Window }
 
 func (w nativeWindow) Navigate(url string) { w.Page().LoadURL(url) }
+func (w nativeWindow) OnDidFinishLoad(fn func()) func() {
+	return w.Page().OnDidFinishLoad(fn)
+}
+func (w nativeWindow) ReloadIgnoringCache() { w.Page().ReloadIgnoringCache() }
 
 func createPage(w savedWindow, closed func()) managedWindow {
 	win := mygo.NewWindow(mygo.WindowOptions{
