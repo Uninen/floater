@@ -18,7 +18,7 @@ func main() {
 	}
 	mygo.App.SetMenu(app.appMenu())
 	mygo.App.OnWindowAllClosed(func() {})
-	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { app.quitting = true })
+	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { app.quit() })
 	mygo.App.OnSecondInstance(func([]string, string) { app.newWindow() })
 	mygo.App.WhenReady(app.ready)
 	err = mygo.App.Run()

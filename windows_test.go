@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+)
 
 func TestRestoreRefreshesOpenWindowsOnce(t *testing.T) {
 	created := make(map[string]*testWindow)
@@ -50,7 +53,58 @@ func TestRestoreRefreshesOpenWindowsOnce(t *testing.T) {
 	}
 }
 
+func TestQuitRestoresCurrentPages(t *testing.T) {
+	store := &windowStore{path: filepath.Join(t.TempDir(), "windows.json")}
+	created := make(map[string]*testWindow)
+	create := func(w savedWindow, _ func()) managedWindow {
+		win := &testWindow{url: w.URL}
+		created[w.ID] = win
+		return win
+	}
+	m := newWindowManager([]savedWindow{
+		{ID: "first", URL: "https://example.com/", Open: true},
+		{ID: "second", URL: "https://example.org/", Open: true},
+		{ID: "closed", URL: "https://example.net/"},
+	}, create)
+	m.changed = func() {
+		if err := store.save(1, m.windows); err != nil {
+			t.Fatal(err)
+		}
+	}
+	m.restore()
+	m.changed()
+	want := map[string]string{
+		"first":  "https://example.com/articles/last?view=full#details",
+		"second": "https://example.org/app/settings#profile",
+	}
+	for id, url := range want {
+		created[id].url = url
+	}
+	m.quit()
+	for id := range m.open {
+		m.closed(id)
+	}
+
+	windows, err := store.load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	created = make(map[string]*testWindow)
+	restarted := newWindowManager(windows, create)
+	restarted.changed = func() {}
+	restarted.restore()
+	for id, url := range want {
+		if win := created[id]; win == nil || win.url != url {
+			t.Errorf("%s did not restore its last page %q: got %+v", id, url, win)
+		}
+	}
+	if created["closed"] != nil {
+		t.Error("restart opened a window that was closed")
+	}
+}
+
 type testWindow struct {
+	url          string
 	loadFinished func()
 	refreshes    int
 }
@@ -62,6 +116,7 @@ func (*testWindow) Close()                 {}
 func (*testWindow) SetTitle(string)        {}
 func (*testWindow) SetAlwaysOnTop(bool)    {}
 func (*testWindow) Navigate(string)        {}
+func (w *testWindow) URL() string          { return w.url }
 func (w *testWindow) ReloadIgnoringCache() { w.refreshes++ }
 
 func (w *testWindow) OnDidFinishLoad(fn func()) func() {

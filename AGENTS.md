@@ -1,8 +1,8 @@
 # Floater
 
-A simple native tool for running a Web page in a window that can be toggled to float always on top.
+A simple native macOS tool for running a Web page in a window that can be toggled to float always on top.
 
-Alpha stage.
+Beta status.
 
 ## North Star
 
@@ -26,7 +26,14 @@ Design, preview, screenshot, test, and visually verify only dark-mode UI. Never 
 - `go test` - run functional tests without a window
 - `go tool mygo build` - package the app
 
-When user asks to build the app it means build it and copy result to `/Applications/`, do NOTHING else.
+When the user asks to build the app, run this exact command from the project root. Do nothing else. Do not launch the app.
+
+```bash
+go tool mygo build && rm -rf /Applications/Floater.app && mv build/darwin-arm64/Floater.app /Applications/Floater.app
+```
+
+Remove the previous app before moving the new one. Never copy or merge into an existing app bundle. That can leave Finder
+showing the old folder date. The `&&` operators prevent removal if the build fails.
 
 ## Do Not Interrupt the User's Desktop
 
@@ -50,6 +57,7 @@ When user asks to build the app it means build it and copy result to `/Applicati
 - Write or rewrite all text (comments, docstrings, learnings, your responses, everything) in plain, layman-readable
   English in the spirit of ASD-STE100 Simplified Technical English: short sentences, active voice, simple tenses, one
   word one meaning, condition before command, every technical term defined at first use, no AI slop.
+- This app supports macOS only. Do not add unnecessary code, fallbacks, or build settings for other operating systems.
 
 ## Document Your Learnings
 
@@ -66,7 +74,7 @@ Keep it lean, prune stale entries, and never duplicate this file.
 
 Check when the full task is finished, not after every user message.
 
-- [ ] Tests pass AND are properly gardened. You MUST provide a VERY compelling justification for EVERY added new test.
+- [ ] Tests pass AND are properly gardened. Provide a compelling justification for EVERY added new test.
 - [ ] Learnings recorded per [Document Your Learnings](#document-your-learnings), or none.
 
 Always report that you have followed this checklist after you complete any meaningfully large task that requires things

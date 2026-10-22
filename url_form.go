@@ -9,7 +9,7 @@ import (
 	"github.com/egoist/mygo"
 )
 
-const nativeURLDialogHeight = 88
+const urlFormHeight = 88
 
 type cocoaPoint struct{ X, Y float64 }
 type cocoaSize struct{ Width, Height float64 }
@@ -46,7 +46,7 @@ type appKitURLForm struct {
 	visible                                       bool
 }
 
-func newAppKitURLForm(window objc.ID, submit func(string)) *appKitURLForm {
+func newAppKitURLForm(window *mygo.Window, submit func(string)) *appKitURLForm {
 	if urlFormClass == 0 {
 		var err error
 		urlFormClass, err = objc.RegisterClass("FloaterURLForm", objc.GetClass("NSObject"), nil, nil, []objc.MethodDef{
@@ -67,10 +67,11 @@ func newAppKitURLForm(window objc.ID, submit func(string)) *appKitURLForm {
 			log.Fatal(err)
 		}
 	}
-	f := &appKitURLForm{window: window, submit: submit}
+	native := objc.ID(window.NativeHandle())
+	f := &appKitURLForm{window: native, submit: submit}
 	// Keep MyGo’s content alive while AppKit owns the window’s content view.
-	f.original = cocoa(cocoa(window, "contentView"), "retain")
-	f.view = cocoa(cocoa(cocoaClass("NSView"), "alloc"), "initWithFrame:", cocoaRect{Size: cocoaSize{440, nativeURLDialogHeight}})
+	f.original = cocoa(cocoa(native, "contentView"), "retain")
+	f.view = cocoa(cocoa(cocoaClass("NSView"), "alloc"), "initWithFrame:", cocoaRect{Size: cocoaSize{440, urlFormHeight}})
 	f.target = cocoa(objc.ID(urlFormClass), "new")
 	urlFormTargets[f.target] = f
 	f.field = cocoa(cocoaClass("NSTextField"), "textFieldWithString:", cocoaString(""))
@@ -84,11 +85,6 @@ func newAppKitURLForm(window objc.ID, submit func(string)) *appKitURLForm {
 	cocoa(f.button, "setBezelStyle:", 1)
 	cocoa(f.button, "setKeyEquivalent:", cocoaString("\r"))
 	cocoa(f.view, "addSubview:", f.button)
-	return f
-}
-
-func newNativeURLForm(window *mygo.Window, submit func(string)) nativeURLForm {
-	f := newAppKitURLForm(objc.ID(window.NativeHandle()), submit)
 	window.OnClosed(func() {
 		delete(urlFormTargets, f.target)
 		cocoa(f.target, "release")

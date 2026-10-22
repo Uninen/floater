@@ -1,7 +1,7 @@
 {
   "name": "Floater",
   "identifier": "net.uninen.floater",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "out": "build",
   "macos": {
     "infoPlist": {

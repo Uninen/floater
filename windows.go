@@ -26,6 +26,7 @@ type managedWindow interface {
 	SetTitle(string)
 	SetAlwaysOnTop(bool)
 	Navigate(string)
+	URL() string
 	OnDidFinishLoad(func()) func()
 	ReloadIgnoringCache()
 }
@@ -102,11 +103,11 @@ func (m *windowManager) viewSize() (int, int) {
 	if m.loadError != "" || m.saveError != "" {
 		return 580, 480
 	}
-	height := nativeURLDialogHeight
+	height := urlFormHeight
 	if m.editID != "" {
 		height = 264
 	}
-	if m.formError != "" && (m.editID != "" || nativeURLDialogHeight == 116) {
+	if m.formError != "" && m.editID != "" {
 		height += 28
 	}
 	return 440, height
@@ -181,6 +182,23 @@ func (m *windowManager) restore() {
 				win.ReloadIgnoringCache()
 			})
 		}
+	}
+}
+
+func (m *windowManager) quit() {
+	m.quitting = true
+	changed := false
+	for i, w := range m.windows {
+		if native := m.open[w.ID]; native != nil {
+			url, err := normalizeURL(native.URL())
+			if err == nil && url != w.URL {
+				m.windows[i].URL = url
+				changed = true
+			}
+		}
+	}
+	if changed {
+		m.changed()
 	}
 }
 

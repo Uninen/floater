@@ -18,22 +18,17 @@ type floater struct {
 	*windowManager
 	store        *windowStore
 	editorWindow *mygo.Window
-	urlForm      nativeURLForm
+	urlForm      *appKitURLForm
 	editorSize   [2]int
 	tray         *mygo.Tray
 	revision     uint64
 	saves        sync.WaitGroup
 }
 
-type nativeURLForm interface {
-	Show(string)
-	Hide()
-	Reset(string)
-}
-
 type nativeWindow struct{ *mygo.Window }
 
 func (w nativeWindow) Navigate(url string) { w.Page().LoadURL(url) }
+func (w nativeWindow) URL() string         { return w.Page().URL() }
 func (w nativeWindow) OnDidFinishLoad(fn func()) func() {
 	return w.Page().OnDidFinishLoad(fn)
 }
@@ -41,15 +36,13 @@ func (w nativeWindow) ReloadIgnoringCache() { w.Page().ReloadIgnoringCache() }
 
 func createPage(w savedWindow, closed func()) managedWindow {
 	win := mygo.NewWindow(mygo.WindowOptions{
-		Title:           w.Name,
-		Width:           1024,
-		Height:          768,
-		URL:             w.URL,
-		StateKey:        "page-" + w.ID,
-		Frameless:       true,
-		AlwaysOnTop:     w.AlwaysOnTop,
-		SkipTaskbar:     true,
-		AutoHideMenuBar: true,
+		Title:       w.Name,
+		Width:       1024,
+		Height:      768,
+		URL:         w.URL,
+		StateKey:    "page-" + w.ID,
+		Frameless:   true,
+		AlwaysOnTop: w.AlwaysOnTop,
 		Page: mygo.PageOptions{
 			PreloadScript: `
 				document.addEventListener("DOMContentLoaded", () => {
@@ -75,14 +68,13 @@ func (a *floater) ready() {
 		BackgroundColor: "#18181b",
 		StateKey:        "editor",
 		Hidden:          true,
-		SkipTaskbar:     true,
 		DisableResize:   true,
 		Content:         ui.View(a.view),
 	})
 	a.dismiss = a.editorWindow.Hide
 	a.changed = a.persist
 	a.viewChanged = a.layoutEditor
-	a.urlForm = newNativeURLForm(a.editorWindow, func(url string) {
+	a.urlForm = newAppKitURLForm(a.editorWindow, func(url string) {
 		a.url = url
 		a.saveDraft()
 		if a.formError != "" {
@@ -98,6 +90,7 @@ func (a *floater) ready() {
 	})
 	var err error
 	a.tray, err = mygo.NewTray(mygo.TrayOptions{
+		ID:             "floater",
 		Icon:           trayIcon,
 		IconIsTemplate: true,
 		ToolTip:        "Floater — your floating windows",
@@ -116,12 +109,10 @@ func (a *floater) ready() {
 }
 
 func (a *floater) layoutEditor() {
-	if a.urlForm != nil {
-		if a.editID == "" && a.loadError == "" && a.saveError == "" {
-			a.urlForm.Show(a.url)
-		} else {
-			a.urlForm.Hide()
-		}
+	if a.editID == "" && a.loadError == "" && a.saveError == "" {
+		a.urlForm.Show(a.url)
+	} else {
+		a.urlForm.Hide()
 	}
 	width, height := a.viewSize()
 	size := [2]int{width, height}
@@ -142,9 +133,7 @@ func (a *floater) showEditor() {
 
 func (a *floater) newWindow() {
 	a.beginNew()
-	if a.urlForm != nil {
-		a.urlForm.Reset("")
-	}
+	a.urlForm.Reset("")
 	a.showEditor()
 }
 
@@ -221,7 +210,7 @@ func (a *floater) appMenu() *mygo.Menu {
 	return mygo.NewMenu([]*mygo.MenuItem{
 		{Role: mygo.RoleAppMenu},
 		{Label: "File", Submenu: []*mygo.MenuItem{
-			{Label: "New window…", Accelerator: "CmdOrCtrl+N", Disabled: a.loadError != "", Click: func(*mygo.MenuItem, *mygo.Window) { a.newWindow() }},
+			{Label: "New window…", Accelerator: "Cmd+N", Disabled: a.loadError != "", Click: func(*mygo.MenuItem, *mygo.Window) { a.newWindow() }},
 			mygo.Separator(),
 			{Role: mygo.RoleClose},
 		}},
