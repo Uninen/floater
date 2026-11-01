@@ -26,14 +26,15 @@ Design, preview, screenshot, test, and visually verify only dark-mode UI. Never 
 - `go test` - run functional tests without a window
 - `go tool mygo build` - package the app
 
-When the user asks to build the app, run this exact command from the project root. Do nothing else. Do not launch the app.
+When the user asks to build the app, run this exact command from the project root. Do nothing else. Do not launch the
+app.
 
 ```bash
 go tool mygo build && rm -rf /Applications/Floater.app && mv build/darwin-arm64/Floater.app /Applications/Floater.app
 ```
 
-Remove the previous app before moving the new one. Never copy or merge into an existing app bundle. That can leave Finder
-showing the old folder date. The `&&` operators prevent removal if the build fails.
+Remove the previous app before moving the new one. Never copy or merge into an existing app bundle. That can leave
+Finder showing the old folder date. The `&&` operators prevent removal if the build fails.
 
 ## Do Not Interrupt the User's Desktop
 
